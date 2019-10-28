@@ -29,13 +29,13 @@ Vim Go IDE
 
 既然是 Go 的开发环境，第一步当前就是准备好 。
 
-#### 安装 Go 
-到 [golang.org](https://golang.org/dl/) 将安装包下载，并配置好环境， 推荐使用二进制版本，下载完成后直接解压缩就可以使用。如果无法访问 go 官网，可以考虑去 [golang.google.cn](https://golang.google.cn/dl) 去下载。 
+#### 安装 Go
+到 [golang.org](https://golang.org/dl/) 将安装包下载，并配置好环境， 推荐使用二进制版本，下载完成后直接解压缩就可以使用。如果无法访问 go 官网，可以考虑去 [golang.google.cn](https://golang.google.cn/dl) 去下载。
 
 
 ```bash
 wget https://dl.google.com/go/go1.12.linux-amd64.tar.gz
-sudo tar xzvf go1.12.linux-amd64.tar.gz -C /usr/local/
+sudo tar -xzvf go1.12.linux-amd64.tar.gz -C /usr/local/
 ```
 
 #### 配置 PATH 及 GOPATH
@@ -44,15 +44,16 @@ sudo tar xzvf go1.12.linux-amd64.tar.gz -C /usr/local/
 
 ```bash
 # 这是默认的位置，也可以按照需求指定到其他目录
-mkdir -p $HOME/go/{bin,pkg,src}
+mkdir -p /nebula/go/{bin,pkg,src}
 ```
 
 配置环境变量
 
 用户 vim 创建一个配置文 `vim /etc/profile.d/go.sh` ，写入下面内容
+也可以在~/.bashrc中更改
 
 ```bash
-export GOPATH=$HOME/go
+export GOPATH=/nebula/go
 export GOROOT=/usr/local/go
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
@@ -64,7 +65,7 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```vim
 
 "==============================================================================
-" vim 内置配置 
+" vim 内置配置
 "==============================================================================
 
 " 设置 vimrc 修改保存后立刻生效，不用在重新打开
@@ -85,7 +86,7 @@ set shiftwidth=4 " 设置自动缩进长度为4空格
 set autoindent " 继承前一行的缩进方式，适用于多行注释
 
 " 定义快捷键的前缀，即<Leader>
-let mapleader=";" 
+let mapleader=";"
 
 " ==== 系统剪切板复制粘贴 ====
 " v 模式下复制内容到系统剪切板
@@ -118,6 +119,21 @@ au InsertLeave *.go,*.sh,*.php write
 ```bash
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
     https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+note
+当https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim 打不开的时候，或者错误的时候
+接下来配置了vim之后会报错
+Error detected while processing /Users/selton/.vim/vimrc:
+E117: Unknown function: plug#begin
+
+请在vim配置文件的开头第一句写明set nocompatible
+也就是set nocompatible开启了vim相对于vi的很多新的功能,报错异步加载的功能
+所以如果没有set nocompatible,接下来的plugin安装会下载成功,但是:PlugStatus查看状态就一直是失败
+
+
+解决方案：
+git clone https://github.com/steppenwolfyuetong/vim-plug.git
+将下载后的plug.vim 放到~/.vim/autoload/下面
 ```
 
 #### 配置插件
@@ -180,9 +196,9 @@ Plug 'honza/vim-snippets'
 Plug 'KeitaNakamura/neodark.vim'
 " colorscheme monokai
 Plug 'crusoexia/vim-monokai'
-" colorscheme github 
+" colorscheme github
 Plug 'acarapetis/vim-colors-github'
-" colorscheme one 
+" colorscheme one
 Plug 'rakr/vim-one'
 
 " go 主要插件
@@ -207,6 +223,7 @@ call plug#end()
 
 插件会自动下载安装，看见上面显示 Finishing ... Done 的内容，插件安装成功
 
+执行PlugStatus查看插件的状态是否OK
 #### 插件删除
 
 如果想要删除插件，只要将不需要的插件注释或者删除，执行 `:PlugClean` 就可以自动清理了
@@ -224,6 +241,14 @@ call plug#end()
 ```
 
 出现  `vim-go: installing finished!` 安装成功，可以使用 Go 包的相关功能了
+
+这一步可能去下载对应的插件失败，需要如下设置
+go get层面增加代理
+go 1.11版本新增了 GOPROXY 环境变量，go get会根据这个环境变量来决定去哪里取引入库的代码
+
+$ export GOPROXY=https://goproxy.io
+1
+其中，https://goproxy.io 是一个goproxy.io这个开源项目提供的公开代理服务。
 
 > 需要注意前面的 PATH 要配置正确，并且已经生效，如果配置正确没有生效，可以注销再登录查看
 
@@ -243,7 +268,7 @@ b. 编译
 ```bash
 cd ~/.vim/plugged/YouCompleteMe
 # 编译，并加入 go 的支持
-python3 install.py --go-completer 
+python3 install.py --clang-completer --go-completer
 ```
 
 c. 配置和  `SirVer/ultisnips` 冲突的快捷键
@@ -266,10 +291,14 @@ let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
 下面是全部的 `~/.vimrc` 中的配置, 也可以直接下载我配置好的 [vimrc](./vimrc) 文件
 
 ```vim
-"==============================================================================
+" Author: yuetong
+" Date: 2019-10-28
+" Language: Go
+"
+" =============================================================================
 " 处理 Gnome 终端不能使用 alt 快捷键
 " 参考：http://landcareweb.com/questions/8623/altjian-kuai-jie-jian-bu-gua-yong-yu-dai-you-vimde-gnomezhong-duan
-"==============================================================================
+" ==============================================================================
 let c='a'
 while c <= 'z'
   exec "set <A-".c.">=\e".c
@@ -280,21 +309,68 @@ endw
 set timeout ttimeoutlen=50
 
 
-"==============================================================================
-" vim 内置配置 
-"==============================================================================
+" ==============================================================================
+" vim 内置配置(vim 自身（非插件）快捷键)
+" ==============================================================================
 
-" 设置 vimrc 修改保存后立刻生效，不用在重新打开
-" 建议配置完成后将这个关闭，否则配置多了之后会很卡
-" autocmd BufWritePost $MYVIMRC source $MYVIMRC
+" >>  定义快捷键
+
+" 定义快捷键到行首和行尾
+nmap LB 0
+nmap LE $
+" 定义快捷键的前缀，即<Leader>
+let mapleader=";"
+
+" 设置快捷键将选中文本块复制至系统剪贴板
+vnoremap <Leader>y "+y
+" 设置快捷键将系统剪贴板内容粘贴至vim
+nmap <Leader>p "+p
+
+
+" 定义快捷键关闭当前分割窗口
+nmap <Leader>q :q<CR>
+" 定义快捷键保存当前窗口内容
+nmap <Leader>w :w<CR>
+" 定义快捷键保存所有窗口内容并退出 vim
+nmap <Leader>WQ :wa<CR>:q<CR>
+" 不做任何保存，直接退出 vim
+nmap <Leader>Q :qa!<CR>
+
+" 设置快捷键遍历子窗口
+" 依次遍历
+nnoremap nw <C-W><C-W>
+" 跳转至左方的窗口
+nnoremap <Leader>hw <C-W>h
+" 跳转至下方的子窗口
+nnoremap <Leader>jw <C-W>j
+" 跳转至上方的子窗口
+nnoremap <Leader>kw <C-W>k
+" 跳转至右方的窗口
+nnoremap <Leader>lw <C-W>l
+
+" 定义快捷键在结对符之间跳转
+nmap <Leader>M %
+
+" <<
+
+" >> 其他
+
+"让配置变更立即生效
+autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
 " 关闭兼容模式
 set nocompatible
 
+" 开启实时搜索
+set incsearch
+
+" 搜索时大小写不敏感
+set ignorecase
+
 set number " 设置绝对行号
-set relativenumber " 设置相对行号
+" set relativenumber " 设置相对行号
 set cursorline "突出显示当前行
-" set cursorcolumn " 突出显示当前列
+set cursorcolumn " 突出显示当前列
 set showmatch " 显示括号匹配
 
 " tab 缩进
@@ -302,30 +378,7 @@ set tabstop=4 " 设置Tab长度为4空格
 set shiftwidth=4 " 设置自动缩进长度为4空格
 set autoindent " 继承前一行的缩进方式，适用于多行注释
 
-" 定义快捷键的前缀，即<Leader>
-let mapleader=";" 
 
-" 自定义快捷键
-
-" ==== 系统剪切板复制粘贴 ====
-" v 模式下复制内容到系统剪切板
-vmap <M-c> "+yy
-" n 模式下复制一行到系统剪切板
-nmap <M-c> "+yy
-" n 模式下粘贴系统剪切板的内容
-nmap <M-v> "+p
-
-" 修改默认的区域切换如ctrl+w+h 奇幻到左侧， 依次是 左右上下
-nmap <M-h> <C-w>h
-nmap <M-l> <C-w>l
-nmap <M-k> <C-w>k
-nmap <M-j> <C-w>j
-
-
-"开启实时搜索
-set incsearch
-" 搜索时大小写不敏感
-set ignorecase
 syntax enable
 syntax on                    " 开启文件类型侦测
 filetype plugin indent on    " 启用自动补全
@@ -333,12 +386,24 @@ filetype plugin indent on    " 启用自动补全
 " 退出插入模式指定类型的文件自动保存
 au InsertLeave *.go,*.sh,*.php write
 
+" vim 自身命令行模式智能补全
+set wildmenu
 
-"==============================================================================
-" 插件配置 
-"==============================================================================
+" backspace键不能用的问题
+set backspace=indent,eol,start
 
-" 插件开始的位置
+" 保持文件时自动删除尾部的空白字符
+autocmd BufWrite * silent! :%s/[[:space:]]\+$//g
+
+" <<
+
+
+" =======================================================================
+" 插件配置
+" ========================================================================
+
+" 插件开始的位置 vim-plug 管理的插件列表必须位于 plug#begin('~/.vim/plugged') 和 plug#end() 之间
+
 call plug#begin('~/.vim/plugged')
 
 " Vim 中文文档
@@ -351,7 +416,7 @@ Plug 'junegunn/vim-easy-align'
 " 用来提供一个导航目录的侧边栏
 Plug 'scrooloose/nerdtree'
 
-" 可以使 nerdtree Tab 标签的名称更友好些
+" 可以使 nerdtree Tab标签的名字更友好些
 Plug 'jistr/vim-nerdtree-tabs'
 
 " 可以在导航目录中看到 git 版本信息
@@ -382,14 +447,21 @@ Plug 'airblade/vim-gitgutter'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 
+" 可以在 vim 中使用 tab 补全
+"Plug 'vim-scripts/SuperTab'
+
+" 可以在 vim 中自动完成
+"Plug 'Shougo/neocomplete.vim'
+
+
 " 配色方案
 " colorscheme neodark
 Plug 'KeitaNakamura/neodark.vim'
 " colorscheme monokai
 Plug 'crusoexia/vim-monokai'
-" colorscheme github 
+" colorscheme github
 Plug 'acarapetis/vim-colors-github'
-" colorscheme one 
+" colorscheme one
 Plug 'rakr/vim-one'
 
 " go 主要插件
@@ -401,19 +473,34 @@ Plug 'dgryski/vim-godef'
 Plug 'iamcco/mathjax-support-for-mkdp'
 Plug 'iamcco/markdown-preview.vim'
 
+" 自动生成注释的插件
+Plug 'scrooloose/nerdcommenter'
+
+" 强大的文件搜索插件
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+
+" 格式化代码插件
+" 这个插件特定语言需要额外支持， 比如格式化 json， 需要 js-beautify
+" 安装可以 yay -S js-beautify(archlinux) 或者 npm install -g js-beautify
+" 更多支持参考： https://github.com/Chiel92/vim-autoformat#default-formatprograms
+Plug 'Chiel92/vim-autoformat'
+
 " 插件结束的位置，插件全部放在此行上面
 call plug#end()
 
 
 "==============================================================================
-" 主题配色 
+" 主题配色
 "==============================================================================
 
 " 开启24bit的颜色，开启这个颜色会更漂亮一些
 set termguicolors
-" 配色方案, 可以从上面插件安装中的选择一个使用 
+" 配色方案, 可以从上面插件安装中的选择一个使用
+" 主题1
 colorscheme one " 主题
 set background=dark " 主题背景 dark-深色; light-浅色
+
 
 
 "==============================================================================
@@ -538,6 +625,16 @@ let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
 " 关闭了提示再次触发的快捷键
 let g:ycm_key_invoke_completion = '<Leader>,'
 
+
+"==============================================================================
+" UltiSnips 插件
+"==============================================================================
+" better key bindings for UltiSnipsExpandTrigger
+let g:UltiSnipsExpandTrigger = "<tab>"
+let g:UltiSnipsJumpForwardTrigger = "<tab>"
+let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
+
+
 "==============================================================================
 "  其他插件配置
 "==============================================================================
@@ -558,6 +655,19 @@ map <silent> <F6> <Plug>StopMarkdownPreview
 :nn <Leader>9 8gt
 :nn <Leader>0 :tablast<CR>
 
+:nn <M-1> 1gt
+:nn <M-2> 2gt
+:nn <M-3> 3gt
+:nn <M-4> 4gt
+:nn <M-5> 5gt
+:nn <M-6> 6gt
+:nn <M-7> 7gt
+:nn <M-8> 8gt
+:nn <M-9> 9gt
+:nn <M-0> :tablast<CR>
+
+" 自动注释的时候添加空格
+let g:NERDSpaceDelims=1
 
 "==============================================================================
 " GVim 的配置
@@ -577,19 +687,8 @@ if has('gui_running')
 	set guioptions-=r " 隐藏右侧滚动条
 	set guioptions-=b " 隐藏底部滚动条
 
-	" 在 gvim 下不会和 terminal 的 alt+数字的快捷键冲突，
-	" 所以将 tab 切换配置一份 alt+数字的快捷键
-	:nn <M-1> 1gt
-	:nn <M-2> 2gt
-	:nn <M-3> 3gt
-	:nn <M-4> 4gt
-	:nn <M-5> 5gt
-	:nn <M-6> 6gt
-	:nn <M-7> 7gt
-	:nn <M-8> 8gt
-    :nn <M-9> 9gt
-    :nn <M-0> :tablast<CR>
-
+    set guifont=Fira\ Code\ 14
+	set lines=999 columns=999
 endif
 
 
@@ -607,6 +706,24 @@ if has("autocmd")
 		\ endif
 	au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
 endif
+
+"==============================================================================
+" 自定义的额外配置
+"==============================================================================
+"
+" 自动保存 session
+autocmd VimLeave * mks! ~/.vim/session.vim
+" 加载 session 的快捷键
+nmap <Leader>his :source ~/.vim/session.vim<CR>
+
+nnoremap <silent> <C-p> :Files<CR>
+nnoremap <silent> <C-S-i> :Autoformat<CR>
+
+" 有道词典插件
+map <M-t> :Ydc<CR>
+
+" 自动切换到当前文件所在的目录 cdpath
+map <Leader>cd :cd %:h<CR>
 ```
 
 ## 错误处理
@@ -619,7 +736,7 @@ endif
 Taglist: Exuberant ctags (http://ctags.sf.net) not found in PATH. Plugin is not loaded
 ```
 
-解决方法： 
+解决方法：
 
 ```bash
 sudo apt install ctags
